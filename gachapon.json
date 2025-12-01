@@ -1,0 +1,86 @@
+[
+  {
+    "角色": "跳跳貓",
+    "圖片": "/static/gachapon/jump.png",
+    "倉庫圖": NaN,
+    "稀有度": "稀有"
+  },
+  {
+    "角色": "車輪貓",
+    "圖片": "/static/gachapon/wheel.png",
+    "倉庫圖": NaN,
+    "稀有度": "稀有"
+  },
+  {
+    "角色": "美容貓",
+    "圖片": "/static/gachapon/cosmetic.png",
+    "倉庫圖": NaN,
+    "稀有度": "稀有"
+  },
+  {
+    "角色": "侏儸貓",
+    "圖片": "/static/gachapon/bone.png",
+    "倉庫圖": NaN,
+    "稀有度": "稀有"
+  },
+  {
+    "角色": "鬥士貓",
+    "圖片": "/static/gachapon/warrier.png",
+    "倉庫圖": NaN,
+    "稀有度": "稀有"
+  },
+  {
+    "角色": "海盜貓",
+    "圖片": "/static/gachapon/pirate.png",
+    "倉庫圖": NaN,
+    "稀有度": "稀有"
+  },
+  {
+    "角色": "小偷貓",
+    "圖片": "/static/gachapon/thief.png",
+    "倉庫圖": NaN,
+    "稀有度": "稀有"
+  },
+  {
+    "角色": "僧侶貓",
+    "圖片": "/static/gachapon/monk.png",
+    "倉庫圖": NaN,
+    "稀有度": "稀有"
+  },
+  {
+    "角色": "占卜貓",
+    "圖片": "/static/gachapon/divination.png",
+    "倉庫圖": NaN,
+    "稀有度": "稀有"
+  },
+  {
+    "角色": "薩滿貓",
+    "圖片": "/static/gachapon/shaman.png",
+    "倉庫圖": NaN,
+    "稀有度": "稀有"
+  },
+  {
+    "角色": "魔女貓",
+    "圖片": "/static/gachapon/witch.png",
+    "倉庫圖": NaN,
+    "稀有度": "稀有"
+  },
+  {
+    "角色": "弓箭手貓",
+    "圖片": "/static/gachapon/archer.png",
+    "倉庫圖": NaN,
+    "稀有度": "稀有"
+  },
+  {
+    "角色": "漆黑魔女凱斯莉",
+    "圖片": "/static/gachapon/casey.png",
+    "倉庫圖": NaN,
+    "稀有度": "超激稀有"
+  },
+  {
+    "角色": "皇獸黑暗牙王",
+    "圖片": "/static/gachapon/black_beast.png",
+    "倉庫圖": NaN,
+    "稀有度": "超激稀有"
+  }
+]

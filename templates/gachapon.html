@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>轉蛋機 - 貓咪大戰英語遊戲</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='gachapon.css') }}">
+</head>
+<body style="background-image: url('/static/image/gachapon_background.png'); background-size: cover; background-position: center;">
+
+    <!-- 🔙 回上頁按鈕 -->
+    <a href="/" class="back-btn">← 回上頁</a>
+
+    <div class="gacha-container">
+        <h1 class="gacha-title">喵喵轉蛋機</h1>
+
+        <!-- 🌀 轉蛋機圖片 -->
+        <div id="gachaMachine" class="gacha-machine">
+            <img src="/static/image/gachapon.png" alt="轉蛋機" class="gacha-img">
+        </div>
+
+        <!-- 🎲 轉蛋按鈕 -->
+        <button id="drawButton" class="gacha-button" onclick="drawGacha()">轉蛋1次</button>
+
+        <!-- 📦 結果顯示區（初始隱藏） -->
+        
+        <div id="resultArea" class="result-area" style="display: none;">
+            <img id="resultImage" src="" alt="抽到的角色" class="result-img">
+            <div class="result-box">
+                <p id="resultName"></p>
+            </div>
+            <button class="ok-button" onclick="resetGacha()">OK</button>
+        </div>
+    </div>
+
+    <script>
+        let lastClickTime = 0;
+
+        async function drawGacha() {
+            const now = Date.now();
+            const drawBtn = document.getElementById("drawButton");
+            const gachaMachine = document.getElementById("gachaMachine");
+            const resultArea = document.getElementById("resultArea");
+            const resultImage = document.getElementById("resultImage");
+            const resultName = document.getElementById("resultName");
+
+            // 限制每秒只能點一次
+            if (now - lastClickTime < 1000) return;
+            lastClickTime = now;
+
+            // ⬇️ 隱藏按鈕與轉蛋機，並暫時隱藏結果區
+            drawBtn.style.display = "none"; 
+            gachaMachine.style.display = "none";
+            resultArea.style.display = "none";
+
+            try {
+                // 🔄 立即向後端請求圖片與結果
+                const res = await fetch("/draw_gacha");
+                const data = await res.json();
+
+                // 先載入圖片到 img 元素，但保持結果區隱藏
+                resultImage.src = data.image;
+                //resultName.innerText = `${data.character}（${data.rarity}）`;
+                resultName.innerText = `${data.character}`;
+
+                // ⏱️ 延遲 0.5 秒後再顯示結果區
+                setTimeout(() => {
+                    resultArea.style.display = "flex";
+                    resultArea.style.flexDirection = "column";
+                    resultArea.style.alignItems = "center";
+
+                    // 播放獎勵音效
+                    const audio = new Audio("/static/price.mp3");
+                    audio.play();
+
+                }, 500);
+
+            } catch (error) {
+                alert("轉蛋機卡住了喵～請再試一次！");
+                console.error(error);
+                drawBtn.style.display = "inline-block"; // 發生錯誤也要讓按鈕回來
+            }
+        }
+
+        // 🔄 重置畫面
+        function resetGacha() {
+            const resultArea = document.getElementById("resultArea");
+            const gachaMachine = document.getElementById("gachaMachine");
+            const drawBtn = document.getElementById("drawButton");
+
+            resultArea.style.display = "none";
+            gachaMachine.style.display = "block";
+            drawBtn.style.display = "inline-block";
+        }
+    </script>
+</body>
+</html>

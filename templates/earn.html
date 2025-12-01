@@ -1,0 +1,267 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>賺罐罐 - 英文單字挑戰</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='earn.css') }}">
+</head>
+<body>
+    <!-- 🔝 上方控制列 -->
+    <div class="top-bar">
+        <div class="back-container">
+            <a href="/" class="back-btn">← 回上頁</a>
+
+            <!-- 📂 單字檔選擇 -->
+            <select id="wordset-select" onchange="changeWordset()" class="wordset-dropdown">
+                <option value="junior" {% if selected_file == "junior" %}selected{% endif %}>國中2000單字</option>
+                <option value="senior" {% if selected_file == "senior" %}selected{% endif %}>高中5000單字</option>
+            </select>
+        </div>
+
+        <div class="status-container">
+            <div class="status-box">
+                <img src="/static/image/battle.png" alt="統率力" class="status-icon">
+                <span id="leadership">10</span>
+                <span id="timer" style="font-size:14px; color:#555; margin-left:5px;"></span>
+            </div>
+            <div class="status-box">
+                <img src="/static/image/can.png" alt="罐頭" class="status-icon">
+                <span id="canCount">0</span>
+            </div>
+        </div>
+    </div>
+
+    <div class="container">
+        <!-- 🎮 左邊遊戲區 -->
+        <div class="game-area">
+            <h2 class="question" id="question">{{ question }}</h2>
+
+            <div class="options">
+                <button class="option-btn" onclick="selectOption(1, this)">{{ option1 }}</button>
+                <button class="option-btn" onclick="selectOption(2, this)">{{ option2 }}</button>
+                <button class="option-btn" onclick="selectOption(3, this)">{{ option3 }}</button>
+                <button class="option-btn" onclick="selectOption(4, this)">{{ option4 }}</button>
+            </div>
+
+            <div class="game-buttons">
+                <button id="confirm-btn" class="action-btn" style="display: none;" onclick="confirmAnswer()">確認</button>
+                <button id="next-btn" class="action-btn" style="display: none;" onclick="nextQuestion()">下一題</button>
+            </div>
+        </div>
+
+        <!-- 🐱 貓咪對話區 -->
+        <div class="cat-area">
+            <div class="cat-dialog">
+                <p id="cat-text">單字會背叛你，但罐罐不會喵～</p>
+            </div>
+            <img src="/static/image/sticker_1.png" alt="貓咪" class="cat-img">
+        </div>
+    </div>
+
+    <script>
+        let selectedOption = null;
+        const correctAnswer = {{ correct_answer }};
+        let isAnswered = false;
+
+        // ⚙️ 初始化 localStorage 狀態
+        let leadership = parseInt(localStorage.getItem("leadership") || "10");
+        let canCount = parseInt(localStorage.getItem("canCount") || "0");
+        let lastRecover = parseInt(localStorage.getItem("lastRecover") || Date.now());
+        const RECOVER_INTERVAL = 600000; // 每600秒恢復1點
+        let username = localStorage.getItem("userAccount"); // 登入後存的帳號
+
+        if (username) {
+            // 登入使用者 → 從後端讀取
+            fetch("/get_cans", {
+                method: "POST",
+                headers: {"Content-Type": "application/json"},
+                body: JSON.stringify({username})
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (data.success) {
+                    canCount = data.cans;
+                    localStorage.setItem("canCount", canCount);
+                    updateStatus();
+                }
+            });
+        } else {
+            // 訪客 → 不讀取 localStorage，刷新就歸零
+            canCount = 0;
+            updateStatus();
+        }
+
+        // 🕒 離線期間自動補算統率力
+        const now = Date.now();
+        const diff = now - lastRecover;
+        if (diff > RECOVER_INTERVAL && leadership < 10) {
+            const recovered = Math.floor(diff / RECOVER_INTERVAL);
+            leadership = Math.min(10, leadership + recovered);
+            lastRecover = now - (diff % RECOVER_INTERVAL);
+            saveStatus();
+        }
+
+        updateStatus();
+
+        // 🧭 統率力倒數與自動回復
+        setInterval(() => {
+            const now = Date.now();
+            const elapsed = now - lastRecover;
+            const remaining = Math.max(0, RECOVER_INTERVAL - elapsed);
+
+            if (leadership >= 10) {
+                // 統率力滿時顯示已滿
+                document.getElementById("timer").innerText = "（已滿）";
+            } else {
+                // 倒數顯示
+                const min = Math.floor(remaining / 60000);
+                const sec = Math.floor((remaining % 60000) / 1000);
+                document.getElementById("timer").innerText =
+                    `（下次回復：${min}:${sec.toString().padStart(2,'0')}）`;
+
+                // 自動恢復
+                if (remaining <= 0) {
+                    leadership++;
+                    lastRecover = Date.now();
+                    animateRecovery();
+                    saveStatus();
+                    updateStatus();
+                    document.getElementById("cat-text").innerText = "統率力恢復啦～喵💪";
+                }
+            }
+        }, 1); // 保留1毫秒，立即啟動倒數
+
+        function changeWordset() {
+            const select = document.getElementById("wordset-select");
+            const selectedValue = select.value;
+
+            // 切換不同資料集
+            // 這邊重新導向到相同頁面，但加上 ?file=junior 或 ?file=senior
+            window.location.href = `/earn?file=${selectedValue}`;
+        }
+
+
+        // 💾 儲存狀態 (localStorage + 後端)
+        function saveStatus() {
+            localStorage.setItem("leadership", leadership);
+            localStorage.setItem("canCount", canCount);
+            localStorage.setItem("lastRecover", lastRecover);
+
+            if (username) {
+                fetch("/update_cans", {
+                    method: "POST",
+                    headers: {"Content-Type": "application/json"},
+                    body: JSON.stringify({username, cans: canCount})
+                })
+                .then(res => res.json())
+                .then(data => {
+                    if (!data.success) console.warn("罐頭數更新失敗:", data.message);
+                });
+            }
+        }
+
+        // 📊 更新顯示
+        function updateStatus() {
+            document.getElementById("leadership").innerText = leadership;
+            document.getElementById("canCount").innerText = canCount;
+        }
+
+        // ✨ 統率力恢復動畫
+        function animateRecovery() {
+            const el = document.getElementById("leadership");
+            el.style.transition = "all 0.3s ease";
+            el.style.transform = "scale(1.4)";
+            el.style.color = "#2ecc71";
+            setTimeout(() => {
+                el.style.transform = "scale(1)";
+                el.style.color = "#000";
+            }, 300);
+        }
+
+        // 🔒 禁用按鈕
+        function disableAll() {
+            document.querySelectorAll(".option-btn, #confirm-btn, #next-btn").forEach(b => {
+                b.disabled = true;
+                b.style.opacity = 0.6;
+            });
+        }
+
+        // 🔓 啟用按鈕
+        function enableAll() {
+            document.querySelectorAll(".option-btn, #confirm-btn, #next-btn").forEach(b => {
+                b.disabled = false;
+                b.style.opacity = 1;
+            });
+        }
+
+        // 🎯 選擇選項
+        function selectOption(choice, btn) {
+            if (leadership <= 0) {
+                document.getElementById("cat-text").innerText = "沒力氣了喵～休息一會吧 😿";
+                return;
+            }
+            if (isAnswered) return;
+
+            selectedOption = choice;
+            document.querySelectorAll(".option-btn").forEach(b => b.style.background = "#fff");
+            btn.style.background = "#ffe08a";
+
+            document.getElementById("confirm-btn").style.display = "inline-block";
+            document.getElementById("next-btn").style.display = "none";
+        }
+
+        // ✅ 確認答案
+        function confirmAnswer() {
+            if (selectedOption === null || leadership <= 0) return;
+
+            const catText = document.getElementById("cat-text");
+            const confirmBtn = document.getElementById("confirm-btn");
+            const optionButtons = document.querySelectorAll(".option-btn");
+
+            isAnswered = true;
+            optionButtons.forEach(b => b.disabled = true);
+
+            optionButtons.forEach((b, index) => {
+                const num = index + 1;
+                if (num === correctAnswer) b.style.background = "#b6fcb6";
+                else if (num === selectedOption) b.style.background = "#fcb6b6";
+                else b.style.background = "#fff";
+            });
+
+            if (selectedOption === correctAnswer) {
+                const gain = Math.floor(Math.random() * 5) + 1;
+                canCount += gain;
+                catText.innerText = `喵喵！答對了！你獲得 ${gain} 罐罐 🥫`;
+            } else {
+                const prevLeadership = leadership;
+                leadership = Math.max(0, leadership - 1);
+
+                // ⚙️ 只有從滿血掉下來時，才重設倒數起點
+                if (prevLeadership === 10) {
+                    lastRecover = Date.now();
+                }
+
+                catText.innerText = "嗚嗚～答錯了，統率力減 1 😿";
+            }
+
+            saveStatus();
+            updateStatus();
+
+            confirmBtn.style.display = "none";
+            document.getElementById("next-btn").style.display = "inline-block";
+
+            if (leadership <= 0) setTimeout(() => {
+                disableAll();
+                catText.innerText = "沒力氣了喵～休息一會吧 😿";
+            }, 400);
+        }
+
+        // 🔁 下一題
+        function nextQuestion() {
+            saveStatus();
+            window.location.reload();
+        }
+    </script>
+</body>
+</html>

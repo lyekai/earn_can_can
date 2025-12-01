@@ -1,0 +1,287 @@
+body {
+    margin: 0;
+    height: 100vh;
+    background: url("/static/image/cover_image.png") center/cover no-repeat;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-family: "Noto Sans TC", sans-serif;
+    position: relative;
+}
+/* 左上用戶姓名方框（固定位置 + 半透明） */
+.user-box {
+    position: fixed;
+    top: 10px;
+    left: 10px;
+    background: rgba(255, 255, 255, 0.5);
+    padding: 10px 18px;
+    border-radius: 10px;
+    color: #333;
+    font-weight: 600;
+    box-shadow: 0 3px 8px rgba(0,0,0,0.25);
+    z-index: 10;
+    min-width: 90px;
+    text-align: center;
+    user-select: none;
+    backdrop-filter: blur(4px);
+    transition: all 0.3s ease;
+}
+.user-box:hover {
+    background: rgba(255, 255, 255, 0.8);
+}
+
+/* 🌟 登入後狀態（例如加上 .logged-in 類名） */
+.user-box.logged-in {
+    background: rgba(255, 255, 200, 0.7); /* 柔和亮黃底 */
+    border: 2px solid #ffcc00;
+    box-shadow: 0 0 10px rgba(255, 230, 100, 0.8);
+    color: #222;
+}
+
+/* 右上登入按鈕 */
+.login-btn {
+    position: fixed;
+    top: 10px;
+    right: 10px;
+    background: rgba(255, 255, 255, 0.85);
+    padding: 10px 18px;
+    border-radius: 10px;
+    text-decoration: none;
+    color: #333;
+    font-weight: 600;
+    box-shadow: 0 3px 8px rgba(0,0,0,0.25);
+    transition: 0.2s;
+    cursor: pointer;
+    z-index: 10;
+}
+.login-btn:hover {
+    background: white;
+}
+
+/* 登入視窗背景遮罩 */
+.login-modal {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background: rgba(0, 0, 0, 0.6);
+    justify-content: center;
+    align-items: center;
+    z-index: 100;
+}
+
+/* 登入彈窗內容 */
+.login-box {
+    background: white;
+    width: 70vw;
+    max-width: 450px;
+    height: 50vh;
+    border-radius: 20px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    padding: 20px 30px;
+}
+
+/* 關閉叉叉 */
+.close-btn {
+    position: absolute;
+    top: 10px;
+    right: 15px;
+    font-size: 22px;
+    font-weight: bold;
+    color: #555;
+    cursor: pointer;
+}
+.close-btn:hover {
+    color: #000;
+}
+
+/* 輸入欄位 */
+.login-box input {
+    width: 80%;
+    padding: 10px;
+    margin: 10px 0;
+    font-size: 16px;
+    border-radius: 10px;
+    border: 1px solid #ccc;
+}
+
+/* 登入按鈕 */
+.login-submit {
+    margin-top: 10px;
+    padding: 10px 20px;
+    border: none;
+    border-radius: 10px;
+    background: linear-gradient(135deg, #ff8a00, #e52e71);
+    color: white;
+    font-size: 16px;
+    cursor: pointer;
+    transition: transform 0.2s ease;
+}
+.login-submit:hover {
+    transform: scale(1.05);
+}
+
+/* 註冊連結 */
+.register-link {
+    margin-top: 15px;
+    font-size: 14px;
+}
+.register-link a {
+    color: #007bff;
+    text-decoration: none;
+}
+.register-link a:hover {
+    text-decoration: underline;
+}
+
+.main {
+    display: flex;
+    flex-direction: column; /* 讓兩個 container 垂直排列 */
+    justify-content: center;
+    align-items: center;
+    gap: 40px; /* 上下間距 */
+    z-index: 1;
+}
+
+/* 半透明遮罩 */
+body::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background-color: rgba(255, 255, 255, 0.9);
+    z-index: 0;
+}
+
+.container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 50px;
+    z-index: 1;
+}
+
+.card {
+    width: 220px;
+    height: 260px;
+    background: rgba(255, 255, 255, 0.8);
+    border-radius: 20px;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+    text-align: center;
+    padding: 20px;
+    transition: transform 0.2s, box-shadow 0.2s;
+    text-decoration: none;
+    color: inherit;
+}
+
+.card:hover {
+    transform: scale(1.05);
+    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.3);
+}
+
+.card img {
+    width: 120px;
+    height: 120px;
+    object-fit: contain;
+}
+
+.card p {
+    margin-top: 15px;
+    font-size: 22px;
+    font-weight: 600;
+    color: #333;
+}
+
+
+@media (max-width: 968px) {
+    body {
+        height: auto; /* 讓內容能自動撐開，不被壓扁 */
+        padding: 40px 0;
+    }
+    .login-btn {
+        position: fixed;
+        top: 10px;
+        right: 10px;
+        background: rgba(255, 255, 255, 0.85);
+        padding: 6px 14px;
+        border-radius: 10px;
+        text-decoration: none;
+        color: #333;
+        font-weight: 600;
+        box-shadow: 0 3px 8px rgba(0,0,0,0.25);
+        transition: 0.2s;
+        cursor: pointer;
+        z-index: 10;
+    }
+    .user-box {
+        position: fixed;
+        top: 10px;
+        left: 10px;
+        background: rgba(255, 255, 255, 0.5);
+        padding: 6px 14px;
+        border-radius: 10px;
+        color: #333;
+        font-weight: 600;
+        box-shadow: 0 3px 8px rgba(0,0,0,0.25);
+        z-index: 10;
+        min-width: 90px;
+        text-align: center;
+        user-select: none;
+        backdrop-filter: blur(4px);
+        transition: all 0.3s ease;
+    }
+
+    .main {
+        gap: 30px;
+    }
+
+    /* 🔹 讓每一層容器允許換行 */
+    .container {
+        flex-wrap: wrap;
+        gap: 25px;
+    }
+
+    /* 🔹 每個卡片寬度 45%，讓一排放兩個剛剛好 */
+    .card {
+        width: 45%;
+        height: 220px;
+    }
+
+    .card img {
+        width: 100px;
+        height: 100px;
+    }
+
+    .card p {
+        font-size: 18px;
+    }
+
+    /* 🔹 控制每個卡片的排列順序 */
+    .main .container:nth-child(1) .card:nth-child(1) { order: 1; } /* 賺罐罐 */
+    .main .container:nth-child(1) .card:nth-child(2) { order: 2; } /* 轉蛋 */
+    .main .container:nth-child(1) .card:nth-child(3) { order: 3; } /* 背包 */
+    .main .container:nth-child(2) .card:nth-child(1) { order: 4; } /* 探險 */
+    .main .container:nth-child(2) .card:nth-child(2) { order: 5; } /* 隊伍編成 */
+    .main .container:nth-child(2) .card:nth-child(3) { order: 6; } /* 戰鬥開始 */
+
+    /* 🔹 將所有卡片都放在一個 flex flow 裡，自動形成 3 排 2 欄 */
+    .main {
+        flex-direction: row;
+        flex-wrap: wrap;
+        justify-content: center;
+    }
+
+    .container {
+        flex: 0 0 100%; /* 每個 container 在手機版佔滿一行，但被 order 控制 */
+        display: contents; /* 讓裡面的卡片直接被 .main 控制排列順序 */
+    }
+    #earn {
+        margin-top: 20px;
+    }
+}

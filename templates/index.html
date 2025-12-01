@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>貓咪大戰英語遊戲</title>
+    <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+    <!-- 左上角使用者 -->
+    <div class="user-box" id="userBox">👤 訪客</div>
+
+    <!-- 右上角登入/登出按鈕 -->
+    <div class="login-btn" id="loginBtn" onclick="handleLoginBtn()">登入</div>
+
+    <div class="main">
+        <div class="container">
+            <a id='earn' href="earn" class="card">
+                <img src="/static/image/can.png" alt="罐罐">
+                <p>賺罐罐</p>
+            </a>
+            <a href="/gachapon" class="card">
+                <img src="/static/image/gachapon.png" alt="轉蛋">
+                <p>轉蛋</p>
+            </a>
+            <div class="card">
+                <img src="/static/image/catnip.png" alt="背包">
+                <p>背包</p>
+            </div>
+        </div>
+
+        <div class="container">
+            <div class="card">
+                <img src="/static/image/kamadodo.png" alt="探險">
+                <p>探險</p>
+            </div>
+            <div class="card">
+                <img src="/static/image/team.png" alt="隊伍編成">
+                <p>隊伍編成</p>
+            </div>
+            <div class="card">
+                <img src="/static/image/battle.png" alt="戰鬥開始">
+                <p>戰鬥開始</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- 登入/註冊彈出視窗 -->
+    <div class="login-modal" id="loginModal">
+        <div class="login-box">
+            <span class="close-btn" onclick="closeLogin()">&times;</span>
+            <h2 id="modalTitle">登入帳號</h2>
+            <input type="text" id="loginAccount" placeholder="輸入你的暱稱">
+            <input type="password" id="loginPassword" placeholder="輸入密碼">
+            <button class="login-submit" id="loginSubmit">登入</button>
+            <div class="register-link" id="registerLink">
+                若無帳號，<a href="#" onclick="switchToRegister()">點我註冊</a>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let isRegisterMode = false; // 註冊模式開關
+
+        // 切換到註冊畫面
+        function switchToRegister() {
+            isRegisterMode = true;
+            document.getElementById("modalTitle").innerText = "註冊帳號";
+            document.getElementById("loginSubmit").innerText = "註冊";
+            document.getElementById("loginAccount").placeholder = "設定你的暱稱(不超過十個字)";
+            document.getElementById("loginPassword").placeholder = "設定密碼";
+        }
+
+        // 開啟登入視窗，重置為登入模式
+        function openLogin() {
+            isRegisterMode = false;
+            document.getElementById("modalTitle").innerText = "登入帳號";
+            document.getElementById("loginSubmit").innerText = "登入";
+            document.getElementById("loginAccount").placeholder = "輸入你的暱稱";
+            document.getElementById("loginPassword").placeholder = "輸入密碼";
+            document.getElementById("loginModal").style.display = "flex";
+        }
+
+        // 關閉彈窗時重置模式
+        function closeLogin() {
+            document.getElementById("loginModal").style.display = "none";
+            isRegisterMode = false;
+            document.getElementById("modalTitle").innerText = "登入帳號";
+            document.getElementById("loginSubmit").innerText = "登入";
+            document.getElementById("loginAccount").placeholder = "輸入你的暱稱";
+            document.getElementById("loginPassword").placeholder = "輸入密碼";
+        }
+
+        // 點擊背景區域關閉視窗
+        window.onclick = function(event) {
+            const modal = document.getElementById("loginModal");
+            if (event.target === modal) closeLogin();
+        }
+
+        // 登入/註冊按鈕事件
+        document.getElementById("loginSubmit").addEventListener("click", async function() {
+            const account = document.getElementById("loginAccount").value.trim();
+            const password = document.getElementById("loginPassword").value.trim();
+
+            if (account === "" || password === "") {
+                alert("請輸入帳號與密碼");
+                return;
+            }
+
+            // 註冊前端檢查暱稱長度
+            if (isRegisterMode && account.length > 10) {
+                alert("暱稱不可超過10個字，註冊失敗");
+                return;
+            }
+
+            try {
+                if (isRegisterMode) {
+                    // 註冊 API
+                    const res = await fetch('/register', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ username: account, password: password })
+                    });
+                    const result = await res.json();
+
+                    if (result.success) {
+                        alert("註冊成功，已自動登入！");
+                        localStorage.setItem("userAccount", result.username);
+                        updateUserUI(result.username);
+                        closeLogin();
+                    } else {
+                        alert(result.message || "註冊失敗");
+                    }
+                } else {
+                    // 登入 API
+                    const res = await fetch('/login', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ username: account, password: password })
+                    });
+                    const result = await res.json();
+
+                    if (result.success) {
+                        localStorage.setItem("userAccount", result.username);
+                        updateUserUI(result.username);
+                        closeLogin();
+                    } else {
+                        alert(result.message || "登入失敗");
+                    }
+                }
+            } catch (err) {
+                console.error(err);
+                alert("伺服器連線錯誤");
+            }
+        });
+
+        // 登出
+        function logout() {
+            localStorage.removeItem("userAccount");
+            updateUserUI(null);
+        }
+
+        // 更新 UI
+        function updateUserUI(account) {
+            const userBox = document.getElementById("userBox");
+            const loginBtn = document.getElementById("loginBtn");
+
+            if (account) {
+                userBox.textContent = `嗨，${account}！`;
+                loginBtn.textContent = "登出";
+                loginBtn.onclick = logout;
+            } else {
+                userBox.textContent = "👤 訪客";
+                loginBtn.textContent = "登入";
+                loginBtn.onclick = openLogin;
+            }
+        }
+
+        // 初始檢查登入狀態
+        window.addEventListener("load", function() {
+            const savedAccount = localStorage.getItem("userAccount");
+            updateUserUI(savedAccount);
+        });
+
+        // 動態綁定登入按鈕（初始）
+        function handleLoginBtn() {
+            const account = localStorage.getItem("userAccount");
+            if (account) logout();
+            else openLogin();
+        }
+    </script>
+</body>
+</html>
